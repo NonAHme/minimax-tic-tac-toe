@@ -40,13 +40,13 @@ def is_terminal(board):
 def score(board, depth=0):
     os, xs, current = board
     if winner(os):
-        return -1, depth
+        return -1
     if winner(xs):
-        return 1, depth
+        return 1
     if is_terminal(board):
-        return 0, depth
+        return 0
     best = min if current == 'x' else max
-    return best(score(b, -1*(abs(depth)+1)) for b in gen_next_states(board))
+    return best(score(b) for b in gen_next_states(board))
 
 
 def next_move(board):
@@ -98,33 +98,3 @@ def play_game():
         pos = raw_input('select position for your move')
         board = play.send(pos)
         print_b(board)
-
-
-def test_score():
-    assert -100 == score(mk_board(xs='23', os='14', turn='x'))
-    assert 3 == score(mk_board(xs='23', os='14', turn='o'))
-    assert 0 == score(mk_board())
-
-
-def test_gen_plays():
-    next_states = set(gen_plays(mk_board(turn='x')))
-    assert all(s.turn == 'o' for s in next_states)
-    assert next_states == {mk_board(os=p, turn='o') for p in '123456789'}
-
-
-def run_tests():
-    tests = [(name, func) for name, func in globals().items()
-             if name.startswith('test_')]
-    passed = failed = 0
-    while tests:
-        name, func = tests.pop()
-        try:
-            res = func()
-        except Exception as e:
-            failed += 1
-            print (name, '...', repr(E))
-        else:
-            passed += 1
-            print (name, '...', 'passed')
-    print('ran {count} test(s) with {failed} failures'.format(count=(passed+failed), failed=failed))
-
