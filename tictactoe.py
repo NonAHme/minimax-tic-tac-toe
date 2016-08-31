@@ -2,6 +2,8 @@ import math
 import sys
 import random
 from collections import namedtuple
+from functools import reduce
+from itertools import takewhile
 
 Board = namedtuple('Board', 'os xs who')
 
@@ -47,39 +49,14 @@ def score(board, alpha=-math.inf, beta=math.inf):
         return 1
     if is_terminal(board):
         return 0
-
-    def best_choice(rank, state):
-        alpha, beta, best = rank
+    for b in moves(board):
         if alpha >= beta:
-            return rank
-        current_score = score(state, alpha, beta)
-        if state.turn == 'o':
-            best = max(best, current_score)
-            alpha = max(best, alpha)
+            break
+        if current == 'o':
+            alpha = max(alpha, score(b, alpha, beta))
         else:
-            best = min(best, current_score)
-            beta = min(best, beta)
-        return alpha, beta, best
-
-    #_, _, best = reduce(best_choice, moves(board))
-
-    if current == 'o':
-        best = -math.inf
-        for m in moves(board):
-            best = max(best, score(m, alpha, beta))
-            alpha = max(best, alpha)
-            if alpha >= beta:
-                break
-        return best
-    else:
-        best = math.inf
-        for m in moves(board):
-            best = min(best, score(m, alpha, beta))
-            beta = min(beta, best)
-            if beta <= alpha:
-                break
-        return best
-
+            beta = min(beta, score(b, alpha, beta)) 
+    return alpha if current =='o' else beta
 
 def next_move(board):
     _, _, current = board
