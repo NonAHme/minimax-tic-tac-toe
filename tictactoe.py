@@ -47,8 +47,39 @@ def score(board, alpha=-math.inf, beta=math.inf):
         return 1
     if is_terminal(board):
         return 0
-    best = min if current == 'x' else max
-    return best(score(b) for b in moves(board)) 
+
+    def best_choice(rank, state):
+        alpha, beta, best = rank
+        if alpha >= beta:
+            return rank
+        current_score = score(state, alpha, beta)
+        if state.turn == 'o':
+            best = max(best, current_score)
+            alpha = max(best, alpha)
+        else:
+            best = min(best, current_score)
+            beta = min(best, beta)
+        return alpha, beta, best
+
+    #_, _, best = reduce(best_choice, moves(board))
+
+    if current == 'o':
+        best = -math.inf
+        for m in moves(board):
+            best = max(best, score(m, alpha, beta))
+            alpha = max(best, alpha)
+            if alpha >= beta:
+                break
+        return best
+    else:
+        best = math.inf
+        for m in moves(board):
+            best = min(best, score(m, alpha, beta))
+            beta = min(beta, best)
+            if beta <= alpha:
+                break
+        return best
+
 
 def next_move(board):
     _, _, current = board
@@ -65,7 +96,7 @@ def print_b(board, file=sys.stdout):
         if i in xs: return ' X'
         return '  '
     turn = 'X'.upper() if who == 'o' else 'O'
-    description = "game over !"  if is_terminal(board) else "it is {turn}'s turn".format(turn=turn)
+    description = "game over !" if is_terminal(board) else "it is {turn}'s turn".format(turn=turn)
     print(description, file=file)
     print('', file=file)
     for row, cols in enumerate(['123', '456', '789']):
@@ -83,6 +114,7 @@ def game(start=True, state=None):
         current_state = new_move(ai_move, next_pos)
         yield current_state
 
+
 def play_game(file=sys.stdout):
     y_n = input('X starts first do you want to start ? [y,n]')
     if y_n in ['y', 'Y']:
@@ -98,5 +130,4 @@ def play_game(file=sys.stdout):
         pos = input('select position for your move \n')
         board = plays.send(pos)
         print_b(board, file=file)
-    
     print("game over ", file=file)
